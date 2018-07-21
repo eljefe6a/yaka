@@ -14,7 +14,7 @@ import io.bigdatainstitute.yaka.producer.ProducerDecorator;
 public class KafkaProducerImpl<K, V> extends Producer<K, V> {
 	Logger logger = Logger.getLogger(KafkaProducerImpl.class);
 
-	KafkaProducer<Object, Object> producer;
+	KafkaProducer<K, V> producer;
 
 	@SafeVarargs
 	public KafkaProducerImpl(String brokers, String topic, Class<K> keyClass, Class<V> valueClass, ProducerDecorator<K, V>... decorators) {
@@ -22,8 +22,9 @@ public class KafkaProducerImpl<K, V> extends Producer<K, V> {
 	}
 
 	@Override
-	public void produce(Object key, Object value) {
-		producer.send(new ProducerRecord<Object, Object>(topic, key, value));
+	public void produce(K key, V value) {
+		// TODO: Add message acknowledgments event
+		producer.send(new ProducerRecord<K, V>(topic, key, value));
 	}
 
 	@Override

@@ -17,6 +17,10 @@ public abstract class ProducerDecorator<K, V> {
 		
 	};
 	
+	public void messageAcknowleged() {
+		
+	}
+	
 	public abstract void close();
 	
 	public boolean offerPreProduce() {
@@ -28,6 +32,10 @@ public abstract class ProducerDecorator<K, V> {
 	};
 	
 	public boolean offerFinishProduce() {
+		return false;
+	};
+	
+	public boolean offerMessageAcknowleged() {
 		return false;
 	};
 }

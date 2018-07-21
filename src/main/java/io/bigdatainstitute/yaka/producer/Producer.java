@@ -7,6 +7,7 @@ public abstract class Producer<K, V> implements AutoCloseable {
 	public ArrayList<ProducerDecorator<K, V>> preProduceListeners;
 	public ArrayList<ProducerDecorator<K, V>> postProduceListeners;
 	public ArrayList<ProducerDecorator<K, V>> finishProduceListeners;
+	public ArrayList<ProducerDecorator<K, V>> messageAcknowledgedListeners;
 	
 	public String brokers;
 	public String topic;
@@ -29,24 +30,12 @@ public abstract class Producer<K, V> implements AutoCloseable {
 	
 	public abstract void init();
 	
-	public abstract void produce(Object key, Object value);
+	public abstract void produce(K key, V value);
 
 	/**
 	 * Optional. Do things like flush or commit a transaction
 	 */
 	public abstract void finish();
-	
-	public boolean offerPreProduce() {
-		return false;
-	};
-	
-	public boolean offerPostProduce() {
-		return false;
-	};
-	
-	public boolean offerFinishProduce() {
-		return false;
-	};
 	
 	public void registerDecorators(Properties producerProperties) {
 		for (ProducerDecorator<K, V> decorator : decorators) {
@@ -68,6 +57,12 @@ public abstract class Producer<K, V> implements AutoCloseable {
 		for (ProducerDecorator<K, V> decorator : decorators) {
 			if (decorator.offerFinishProduce()) {
 				finishProduceListeners.add(decorator);
+			}
+		}
+		
+		for (ProducerDecorator<K, V> decorator : decorators) {
+			if (decorator.offerMessageAcknowleged()) {
+				messageAcknowledgedListeners.add(decorator);
 			}
 		}
 	}
