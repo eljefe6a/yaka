@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
 
 import io.bigdatainstitute.yaka.producer.Producer;
@@ -17,19 +18,25 @@ public class KafkaProducerImpl<K, V> extends Producer<K, V> {
 	KafkaProducer<K, V> producer;
 
 	@SafeVarargs
-	public KafkaProducerImpl(String brokers, String topic, Class<K> keyClass, Class<V> valueClass, ProducerDecorator<K, V>... decorators) {
+	public KafkaProducerImpl(String brokers, String topic, Class<K> keyClass, Class<V> valueClass,
+			ProducerDecorator<K, V>... decorators) {
 		super(brokers, topic, keyClass, valueClass, decorators);
 	}
 
 	@Override
 	public void produce(K key, V value) {
 		preProduce(this, key, value);
-		
-		// TODO: Add message acknowledgments event
-		producer.send(new ProducerRecord<K, V>(topic, key, value));
-		
+
+		if (hasMessageAcknowledgedListeners == true) {
+			// Create callback and acknowledge message
+			producer.send(new ProducerRecord<K, V>(topic, key, value),
+					((RecordMetadata metadata, Exception exception) -> this.messageAcknowledged(this, key, value)));
+		} else {
+			producer.send(new ProducerRecord<K, V>(topic, key, value));
+		}
+
 		postProduce(this, key, value);
-		
+
 	}
 
 	@Override
@@ -41,9 +48,13 @@ public class KafkaProducerImpl<K, V> extends Producer<K, V> {
 	public void init() {
 		Properties propsProd = new Properties();
 		propsProd.put(BOOTSTRAP_SERVERS_CONFIG, brokers);
-		
+
 		registerDecorators(propsProd);
 
 		producer = new KafkaProducer<>(propsProd);
+	}
+
+	public KafkaProducer<K, V> getProducer() {
+		return producer;
 	}
 }
