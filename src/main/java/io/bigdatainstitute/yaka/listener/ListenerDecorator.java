@@ -1,6 +1,8 @@
 package io.bigdatainstitute.yaka.listener;
 
-public abstract class ListenerDecorator {
+import java.util.Properties;
+
+public abstract class ListenerDecorator<K, V> {
 	public boolean offerPreReceiveLoop() {
 		return false;
 	}
@@ -33,7 +35,7 @@ public abstract class ListenerDecorator {
 		
 	}
 	
-	public abstract void init();
+	public abstract void init(Properties consumerProperties, Class<K> keyClass, Class<V> valueClass);
 	
 	public abstract void close();
 }

@@ -1,27 +1,35 @@
 package io.bigdatainstitute.yaka.listener;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
-public abstract class Consumer implements AutoCloseable {
+public abstract class Consumer<K, V> implements AutoCloseable {
 	public ArrayList<DataListener> listeners;
 
-	public ArrayList<ListenerDecorator> preReceiveLoopListeners;
-	public ArrayList<ListenerDecorator> preReceiveListeners;
-	public ArrayList<ListenerDecorator> postReceiveListeners;
-	public ArrayList<ListenerDecorator> postReceiveLoopListeners;
+	public ArrayList<ListenerDecorator<K, V>> preReceiveLoopListeners;
+	public ArrayList<ListenerDecorator<K, V>> preReceiveListeners;
+	public ArrayList<ListenerDecorator<K, V>> postReceiveListeners;
+	public ArrayList<ListenerDecorator<K, V>> postReceiveLoopListeners;
 
 	public String brokers;
 	public String topic;
 	public String consumerGroupName;
 
-	ListenerDecorators[] decorators;
+	ListenerDecorator<K, V>[] decorators;
+	
+	Class<K> keyClass;
+	Class<V> valueClass;
 
-	public Consumer(String brokers, String topic, String consumerGroupName, ListenerDecorators... decorators) {
+	@SafeVarargs
+	public Consumer(String brokers, String topic, String consumerGroupName, Class<K> keyClass, Class<V> valueClass, ListenerDecorator<K, V>... decorators) {
 		this.brokers = brokers;
 		this.topic = topic;
 		this.consumerGroupName = consumerGroupName;
 
 		this.decorators = decorators;
+		
+		this.keyClass = keyClass;
+		this.valueClass = valueClass;
 	}
 
 	public abstract void init();
@@ -32,56 +40,56 @@ public abstract class Consumer implements AutoCloseable {
 
 	public abstract void close();
 
-	public void registerDecorators() {
-		for (ListenerDecorators decorator : decorators) {
-			decorator.getListenerDecorator().init();
+	public void registerDecorators(Properties consumerProperties) {
+		for (ListenerDecorator<K, V> decorator : decorators) {
+			decorator.init(consumerProperties, keyClass, valueClass);
 		}
 
-		for (ListenerDecorators decorator : decorators) {
-			if (decorator.getListenerDecorator().offerPreReceiveLoop()) {
-				preReceiveLoopListeners.add(decorator.getListenerDecorator());
+		for (ListenerDecorator<K, V> decorator : decorators) {
+			if (decorator.offerPreReceiveLoop()) {
+				preReceiveLoopListeners.add(decorator);
 			}
 		}
 
-		for (ListenerDecorators decorator : decorators) {
-			if (decorator.getListenerDecorator().offerPreReceive()) {
-				preReceiveListeners.add(decorator.getListenerDecorator());
+		for (ListenerDecorator<K, V> decorator : decorators) {
+			if (decorator.offerPreReceive()) {
+				preReceiveListeners.add(decorator);
 			}
 		}
 
-		for (ListenerDecorators decorator : decorators) {
-			if (decorator.getListenerDecorator().offerPostReceiveLoop()) {
-				postReceiveListeners.add(decorator.getListenerDecorator());
+		for (ListenerDecorator<K, V> decorator : decorators) {
+			if (decorator.offerPostReceiveLoop()) {
+				postReceiveListeners.add(decorator);
 			}
 		}
 
-		for (ListenerDecorators decorator : decorators) {
-			if (decorator.getListenerDecorator().offerPostReceiveLoop()) {
-				postReceiveLoopListeners.add(decorator.getListenerDecorator());
+		for (ListenerDecorator<K, V> decorator : decorators) {
+			if (decorator.offerPostReceiveLoop()) {
+				postReceiveLoopListeners.add(decorator);
 			}
 		}
 	}
 
 	public void preReceiveLoop() {
-		for (ListenerDecorator decorator : preReceiveLoopListeners) {
+		for (ListenerDecorator<K, V> decorator : preReceiveLoopListeners) {
 			decorator.preReceiveLoop();
 		}
 	}
 
 	public void preReceive() {
-		for (ListenerDecorator decorator : preReceiveListeners) {
+		for (ListenerDecorator<K, V> decorator : preReceiveListeners) {
 			decorator.preReceive();
 		}
 	}
 
 	public void postReceive() {
-		for (ListenerDecorator decorator : postReceiveListeners) {
+		for (ListenerDecorator<K, V> decorator : postReceiveListeners) {
 			decorator.postReceive();
 		}
 	}
 
 	public void postReceiveLoop() {
-		for (ListenerDecorator decorator : postReceiveLoopListeners) {
+		for (ListenerDecorator<K, V> decorator : postReceiveLoopListeners) {
 			decorator.postReceiveLoop();
 		}
 	}

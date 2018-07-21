@@ -1,7 +1,9 @@
 package io.bigdatainstitute.yaka.producer;
 
-public abstract class ProducerDecorator {
-	public abstract void init();
+import java.util.Properties;
+
+public abstract class ProducerDecorator<K, V> {
+	public abstract void init(Properties producerProperties, Class<K> keyClass, Class<V> valueClass);
 	
 	public void preProduce() {
 		
