@@ -5,19 +5,15 @@ import java.util.Properties;
 public abstract class ProducerDecorator<K, V> {
 	public abstract void init(Properties producerProperties, Class<K> keyClass, Class<V> valueClass);
 	
-	public void preProduce() {
+	public void preProduce(Producer<K, V> producer, K key, V value) {
 		
 	};
 	
-	public void postProduce() {
+	public void postProduce(Producer<K, V> producer, K key, V value) {
 		
 	};
 	
-	public void finishProduce() {
-		
-	};
-	
-	public void messageAcknowleged() {
+	public void messageAcknowleged(Producer<K, V> producer, K key, V value) {
 		
 	}
 	
@@ -28,10 +24,6 @@ public abstract class ProducerDecorator<K, V> {
 	};
 	
 	public boolean offerPostProduce() {
-		return false;
-	};
-	
-	public boolean offerFinishProduce() {
 		return false;
 	};
 	

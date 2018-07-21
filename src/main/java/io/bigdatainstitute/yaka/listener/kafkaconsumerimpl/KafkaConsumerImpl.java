@@ -41,8 +41,7 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-
+		consumer.close();
 	}
 
 	@Override

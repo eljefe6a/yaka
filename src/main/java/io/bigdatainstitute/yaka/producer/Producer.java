@@ -6,7 +6,6 @@ import java.util.Properties;
 public abstract class Producer<K, V> implements AutoCloseable {
 	public ArrayList<ProducerDecorator<K, V>> preProduceListeners = new ArrayList<>();
 	public ArrayList<ProducerDecorator<K, V>> postProduceListeners = new ArrayList<>();
-	public ArrayList<ProducerDecorator<K, V>> finishProduceListeners = new ArrayList<>();
 	public ArrayList<ProducerDecorator<K, V>> messageAcknowledgedListeners = new ArrayList<>();
 	
 	public String brokers;
@@ -32,11 +31,6 @@ public abstract class Producer<K, V> implements AutoCloseable {
 	
 	public abstract void produce(K key, V value);
 
-	/**
-	 * Optional. Do things like flush or commit a transaction
-	 */
-	public abstract void finish();
-	
 	public void registerDecorators(Properties producerProperties) {
 		for (ProducerDecorator<K, V> decorator : decorators) {
 			decorator.init(producerProperties, keyClass, valueClass);
@@ -53,17 +47,29 @@ public abstract class Producer<K, V> implements AutoCloseable {
 				postProduceListeners.add(decorator);
 			}
 		}
-
-		for (ProducerDecorator<K, V> decorator : decorators) {
-			if (decorator.offerFinishProduce()) {
-				finishProduceListeners.add(decorator);
-			}
-		}
 		
 		for (ProducerDecorator<K, V> decorator : decorators) {
 			if (decorator.offerMessageAcknowleged()) {
 				messageAcknowledgedListeners.add(decorator);
 			}
+		}
+	}
+	
+	public void preProduce(Producer<K, V> producer, K key, V value) {
+		for (ProducerDecorator<K, V> decorator : preProduceListeners) {
+			decorator.preProduce(producer, key, value);
+		}
+	}
+	
+	public void postProduce(Producer<K, V> producer, K key, V value) {
+		for (ProducerDecorator<K, V> decorator : postProduceListeners) {
+			decorator.postProduce(producer, key, value);
+		}
+	}
+	
+	public void messageAcknowledged(Producer<K, V> producer, K key, V value) {
+		for (ProducerDecorator<K, V> decorator : messageAcknowledgedListeners) {
+			decorator.messageAcknowleged(producer, key, value);
 		}
 	}
 }

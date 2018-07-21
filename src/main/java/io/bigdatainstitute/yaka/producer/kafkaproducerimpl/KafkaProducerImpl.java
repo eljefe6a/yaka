@@ -23,15 +23,13 @@ public class KafkaProducerImpl<K, V> extends Producer<K, V> {
 
 	@Override
 	public void produce(K key, V value) {
-		// TODO: Add rest of produce events
+		preProduce(this, key, value);
 		
 		// TODO: Add message acknowledgments event
 		producer.send(new ProducerRecord<K, V>(topic, key, value));
-	}
-
-	@Override
-	public void finish() {
-
+		
+		postProduce(this, key, value);
+		
 	}
 
 	@Override
