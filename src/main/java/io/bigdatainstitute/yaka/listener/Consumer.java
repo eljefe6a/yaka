@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public abstract class Consumer<K, V> implements AutoCloseable {
-	public ArrayList<DataListener> listeners;
+	public ArrayList<DataListener<K, V>> listeners;
 
 	public ArrayList<ListenerDecorator<K, V>> preReceiveLoopListeners;
 	public ArrayList<ListenerDecorator<K, V>> preReceiveListeners;
@@ -34,7 +34,7 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 
 	public abstract void init();
 
-	public void addListener(DataListener listener) {
+	public void addListener(DataListener<K, V> listener) {
 		listeners.add(listener);
 	}
 

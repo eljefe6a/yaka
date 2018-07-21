@@ -44,7 +44,7 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 	}
 
 	@Override
-	public void addListener(DataListener listener) {
+	public void addListener(DataListener<K, V> listener) {
 		super.addListener(listener);
 
 		// TODO: Handle multiple listeners
@@ -61,7 +61,7 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 				ConsumerRecords<K, V> records = consumer.poll(100);
 
 				for (ConsumerRecord<K, V> record : records) {
-					for (DataListener currentListener : listeners) {
+					for (DataListener<K, V> currentListener : listeners) {
 						preReceive();
 
 						currentListener.dataReceived(record.key(), record.value());

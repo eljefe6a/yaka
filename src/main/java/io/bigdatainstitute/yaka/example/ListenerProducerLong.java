@@ -10,8 +10,8 @@ import io.bigdatainstitute.yaka.producer.Producer;
 import io.bigdatainstitute.yaka.producer.decorators.HighDurable;
 import io.bigdatainstitute.yaka.producer.kafkaproducerimpl.KafkaProducerImpl;
 
-public class ConsumerProducer<K, V> {
-	private static Logger logger = Logger.getLogger(ConsumerProducer.class);
+public class ListenerProducerLong<K, V> {
+	private static Logger logger = Logger.getLogger(ListenerProducerLong.class);
 
 	public static void main(String[] args) {
 		String brokers = "broker";
@@ -23,10 +23,10 @@ public class ConsumerProducer<K, V> {
 				String.class, String.class, new ExactlyOnce<>());
 				Producer<String, String> producer = new KafkaProducerImpl<String, String>(brokers, outputTopic,
 						String.class, String.class, new HighDurable<String, String>());) {
-			consumer.addListener(new DataListener() {
+			consumer.addListener(new DataListener<String, String>() {
 
 				@Override
-				public void dataReceived(Object key, Object value) {
+				public void dataReceived(String key, String value) {
 					producer.produce(key, value);
 
 				}

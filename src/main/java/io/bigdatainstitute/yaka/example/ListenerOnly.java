@@ -13,9 +13,9 @@ public class ListenerOnly {
 
 		try (Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, topic, consumerGroup, String.class,
 				String.class, new ExactlyOnce<>());) {
-			consumer.addListener(new DataListener() {
+			consumer.addListener(new DataListener<String, String>() {
 				@Override
-				public void dataReceived(Object key, Object value) {
+				public void dataReceived(String key, String value) {
 					// Do something
 				}
 			});
