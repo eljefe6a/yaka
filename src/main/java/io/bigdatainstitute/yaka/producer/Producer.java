@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public abstract class Producer<K, V> implements AutoCloseable {
-	public ArrayList<ProducerDecorator<K, V>> preProduceListeners;
-	public ArrayList<ProducerDecorator<K, V>> postProduceListeners;
-	public ArrayList<ProducerDecorator<K, V>> finishProduceListeners;
-	public ArrayList<ProducerDecorator<K, V>> messageAcknowledgedListeners;
+	public ArrayList<ProducerDecorator<K, V>> preProduceListeners = new ArrayList<>();
+	public ArrayList<ProducerDecorator<K, V>> postProduceListeners = new ArrayList<>();
+	public ArrayList<ProducerDecorator<K, V>> finishProduceListeners = new ArrayList<>();
+	public ArrayList<ProducerDecorator<K, V>> messageAcknowledgedListeners = new ArrayList<>();
 	
 	public String brokers;
 	public String topic;

@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public abstract class Consumer<K, V> implements AutoCloseable {
-	public ArrayList<DataListener<K, V>> listeners;
+	public ArrayList<DataListener<K, V>> listeners = new ArrayList<>();
 
-	public ArrayList<ListenerDecorator<K, V>> preReceiveLoopListeners;
-	public ArrayList<ListenerDecorator<K, V>> preReceiveListeners;
-	public ArrayList<ListenerDecorator<K, V>> postReceiveListeners;
-	public ArrayList<ListenerDecorator<K, V>> postReceiveLoopListeners;
+	public ArrayList<ListenerDecorator<K, V>> preReceiveLoopListeners = new ArrayList<>();
+	public ArrayList<ListenerDecorator<K, V>> preReceiveListeners = new ArrayList<>();
+	public ArrayList<ListenerDecorator<K, V>> postReceiveListeners = new ArrayList<>();
+	public ArrayList<ListenerDecorator<K, V>> postReceiveLoopListeners = new ArrayList<>();
 
 	public String brokers;
 	public String topic;
