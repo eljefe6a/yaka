@@ -18,8 +18,10 @@ public class AutoType<K, V> extends ListenerDecorator<K, V> {
 	private void setDeserializerForType(Properties consumerProperties, Class<?> type, String setting) {
 		String deserializer = null;
 
-		if (type.toString().equals("String")) {
+		if (type.equals(String.class)) {
 			deserializer = StringDeserializer.class.toString();
+		} else {
+			throw new RuntimeException("Type not found in list. Type was " + type.toString());
 		}
 		
 		// TODO: Add more
