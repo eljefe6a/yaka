@@ -27,7 +27,7 @@ public abstract class ListenerDecorator<K, V> {
 		
 	}
 	
-	public void postReceive() {
+	public void postReceive(Consumer<K, V> consumer) {
 		
 	}
 	

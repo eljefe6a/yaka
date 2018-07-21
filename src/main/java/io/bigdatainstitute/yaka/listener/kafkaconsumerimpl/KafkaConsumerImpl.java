@@ -20,6 +20,8 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 
 	Properties props = new Properties();
 
+	KafkaConsumer<K, V> consumer;
+
 	@SafeVarargs
 	public KafkaConsumerImpl(String brokers, String topic, String consumerGroupName, Class<K> keyClass,
 			Class<V> valueClass, ListenerDecorator<K, V>... decorators) {
@@ -52,31 +54,29 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 		// TOOD: Add threading
 
 		// Create the consumer and subscribe to the topic
-		try (KafkaConsumer<K, V> consumer = new KafkaConsumer<>(props)) {
-			consumer.subscribe(Arrays.asList(topic));
+		consumer = new KafkaConsumer<K, V>(props);
+		consumer.subscribe(Arrays.asList(topic));
 
-			while (true) {
-				preReceiveLoop();
+		while (true) {
+			preReceiveLoop();
 
-				ConsumerRecords<K, V> records = consumer.poll(100);
+			ConsumerRecords<K, V> records = consumer.poll(100);
 
-				for (ConsumerRecord<K, V> record : records) {
-					for (DataListener<K, V> currentListener : listeners) {
-						preReceive();
+			for (ConsumerRecord<K, V> record : records) {
+				for (DataListener<K, V> currentListener : listeners) {
+					preReceive();
 
-						currentListener.dataReceived(record.key(), record.value());
+					currentListener.dataReceived(record.key(), record.value());
 
-						postReceive();
-					}
+					postReceive(this);
 				}
-
-				postReceiveLoop();
 			}
 
-			// Consumer will automatically be closed
-		} catch (Exception e) {
-			// This handling could cause a cascading failure
-			logger.error("There was an error while consuming", e);
+			postReceiveLoop();
 		}
+	}
+
+	public KafkaConsumer<K, V> getKafkaConsumer() {
+		return consumer;
 	}
 }

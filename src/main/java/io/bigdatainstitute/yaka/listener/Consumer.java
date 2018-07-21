@@ -82,9 +82,9 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 		}
 	}
 
-	public void postReceive() {
+	public void postReceive(Consumer<K, V> consumer) {
 		for (ListenerDecorator<K, V> decorator : postReceiveListeners) {
-			decorator.postReceive();
+			decorator.postReceive(consumer);
 		}
 	}
 
