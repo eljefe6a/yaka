@@ -7,7 +7,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import io.bigdatainstitute.yaka.producer.ProducerDecorator;
 
-public class AutoType<K, V> extends ProducerDecorator<K, V> {
+public class ProducerAutoType<K, V> extends ProducerDecorator<K, V> {
 	@Override
 	public void init(Properties producerProperties, Class<K> keyClass, Class<V> valueClass) {
 		setDeserializerForType(producerProperties, keyClass, ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG);

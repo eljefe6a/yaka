@@ -7,7 +7,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 
 import io.bigdatainstitute.yaka.listener.ListenerDecorator;
 
-public class AutoType<K, V> extends ListenerDecorator<K, V> {
+public class ListenerAutoType<K, V> extends ListenerDecorator<K, V> {
 
 	@Override
 	public void init(Properties consumerProperties, Class<K> keyClass, Class<V> valueClass) {
