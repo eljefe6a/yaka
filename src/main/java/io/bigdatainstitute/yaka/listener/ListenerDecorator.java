@@ -19,19 +19,19 @@ public abstract class ListenerDecorator<K, V> {
 		return false;
 	}
 	
-	public void preReceiveLoop() {
+	public void preReceiveLoop(Consumer<K, V> consumer) {
 		
 	}
 	
-	public void preReceive() {
+	public void preReceive(Consumer<K, V> consumer, K key, V value) {
 		
 	}
 	
-	public void postReceive(Consumer<K, V> consumer) {
+	public void postReceive(Consumer<K, V> consumer, K key, V value) {
 		
 	}
 	
-	public void postReceiveLoop() {
+	public void postReceiveLoop(Consumer<K, V> consumer) {
 		
 	}
 	

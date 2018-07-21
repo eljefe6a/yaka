@@ -20,7 +20,7 @@ public class ExactlyOnce<K, V> extends ListenerDecorator<K, V> {
 	}
 	
 	@Override
-	public void postReceive(Consumer<K, V> consumer) {
+	public void postReceive(Consumer<K, V> consumer, K key, V value) {
 		// TODO: Figure out place to commit
 		((KafkaConsumerImpl<K, V>) consumer).getKafkaConsumer().commitSync();
 	}

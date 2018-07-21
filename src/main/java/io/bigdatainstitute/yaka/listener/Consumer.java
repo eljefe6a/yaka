@@ -70,27 +70,27 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 		}
 	}
 
-	public void preReceiveLoop() {
+	public void preReceiveLoop(Consumer<K, V> consumer) {
 		for (ListenerDecorator<K, V> decorator : preReceiveLoopListeners) {
-			decorator.preReceiveLoop();
+			decorator.preReceiveLoop(consumer);
 		}
 	}
 
-	public void preReceive() {
+	public void preReceive(Consumer<K, V> consumer, K key, V value) {
 		for (ListenerDecorator<K, V> decorator : preReceiveListeners) {
-			decorator.preReceive();
+			decorator.preReceive(consumer, key, value);
 		}
 	}
 
-	public void postReceive(Consumer<K, V> consumer) {
+	public void postReceive(Consumer<K, V> consumer, K key, V value) {
 		for (ListenerDecorator<K, V> decorator : postReceiveListeners) {
-			decorator.postReceive(consumer);
+			decorator.postReceive(consumer, key, value);
 		}
 	}
 
-	public void postReceiveLoop() {
+	public void postReceiveLoop(Consumer<K, V> consumer) {
 		for (ListenerDecorator<K, V> decorator : postReceiveLoopListeners) {
-			decorator.postReceiveLoop();
+			decorator.postReceiveLoop(consumer);
 		}
 	}
 }

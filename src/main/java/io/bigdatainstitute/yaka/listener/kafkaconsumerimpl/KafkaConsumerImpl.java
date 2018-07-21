@@ -58,21 +58,21 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 		consumer.subscribe(Arrays.asList(topic));
 
 		while (true) {
-			preReceiveLoop();
+			preReceiveLoop(this);
 
-			ConsumerRecords<K, V> records = consumer.poll(100);
+			ConsumerRecords<K, V> records = consumer.poll(Long.MAX_VALUE);
 
 			for (ConsumerRecord<K, V> record : records) {
 				for (DataListener<K, V> currentListener : listeners) {
-					preReceive();
+					preReceive(this, record.key(), record.value());
 
 					currentListener.dataReceived(record.key(), record.value());
 
-					postReceive(this);
+					postReceive(this, record.key(), record.value());
 				}
 			}
 
-			postReceiveLoop();
+			postReceiveLoop(this);
 		}
 	}
 
