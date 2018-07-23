@@ -2,7 +2,7 @@
 
 Why would would you want a new/different Kafka API? A few reasons:
 
-* Would not be directly coupled to Kafka. You shouldn't write code directly coupled to Kafka's API.
+* Would not be directly coupled to Kafka. You shouldn't write code directly coupled to Kafka's API. Many of the organizations I've worked with are writing or plan to write their own shim. This API can serve as that shim.
 * Would not make you think about threading. The `KafkaConsumer` is not thread safe and you have to write your own. This opens code up to multi-threading bugs.
 * Would not make you think about code, configs, and properties. Often Kafka needs a property change and code changes. This is unintuitive to most programmers.
 * Wouldn't force flatMaps and functional programming (but you can still use it)
