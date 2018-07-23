@@ -14,6 +14,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <log4j.version>1.2.16</log4j.version>
     <slf4j.version>1.6.1</slf4j.version>
     <avro.version>1.7.7</avro.version>
+    <sqlite.version>3.23.1</sqlite.version>
     <!-- Maven properties for compilation -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -49,6 +50,13 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
       <artifactId>slf4j-simple</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
+    
+    <!-- SQLite -->
+	<dependency>
+	    <groupId>org.xerial</groupId>
+	    <artifactId>sqlite-jdbc</artifactId>
+	    <version>${sqlite.version}</version>
+	</dependency>
   </dependencies>
   <build>
     <plugins>
