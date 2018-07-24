@@ -5,6 +5,10 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -20,8 +24,13 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 
 	Properties props = new Properties();
 
-	KafkaConsumer<K, V> consumer;
+	KafkaConsumer<K, V> kafkaConsumer;
+	
+	/** Thread pool to run consumer in */
+    ExecutorService threadPool;
 
+    ConsumerThread consumerThread;
+    
 	@SafeVarargs
 	public KafkaConsumerImpl(String brokers, String topic, String consumerGroupName, Class<K> keyClass,
 			Class<V> valueClass, ListenerDecorator<K, V>... decorators) {
@@ -37,45 +46,77 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 
 		registerDecorators(props);
 
+		threadPool = Executors.newFixedThreadPool(1);
 	}
 
 	@Override
 	public void close() {
-		consumer.close();
+		if (consumerThread != null) {
+			consumerThread.close();
+		}
 	}
 
 	@Override
 	public void addListener(DataListener<K, V> listener) {
 		super.addListener(listener);
 
-		// TODO: Handle multiple listeners
-
-		// TOOD: Add threading
-
 		// Create the consumer and subscribe to the topic
-		consumer = new KafkaConsumer<K, V>(props);
-		consumer.subscribe(Arrays.asList(topic));
+		kafkaConsumer = new KafkaConsumer<K, V>(props);
+		kafkaConsumer.subscribe(Arrays.asList(topic));
 
-		while (true) {
-			preReceiveLoop(this);
-
-			ConsumerRecords<K, V> records = consumer.poll(Long.MAX_VALUE);
-
-			for (ConsumerRecord<K, V> record : records) {
-				for (DataListener<K, V> currentListener : listeners) {
-					preReceive(this, record.key(), record.value());
-
-					currentListener.dataReceived(record.key(), record.value());
-
-					postReceive(this, record.key(), record.value());
-				}
-			}
-
-			postReceiveLoop(this);
-		}
+		consumerThread = new ConsumerThread(this);
+		threadPool.submit(consumerThread);
 	}
 
 	public KafkaConsumer<K, V> getKafkaConsumer() {
-		return consumer;
+		return kafkaConsumer;
+	}
+	
+	public class ConsumerThread implements Runnable {
+	    /** Atomic boolean to keep track of wanting to close connection */
+	    private AtomicBoolean isClosed = new AtomicBoolean(false);
+	    
+		KafkaConsumerImpl<K, V> consumer;
+		
+		public ConsumerThread(KafkaConsumerImpl<K, V> consumer) {
+			this.consumer = consumer;
+		}
+
+		@Override
+		public void run() {
+			while (isClosed.get() == false) {
+				preReceiveLoop(consumer);
+
+				ConsumerRecords<K, V> records = consumer.kafkaConsumer.poll(Long.MAX_VALUE);
+
+				for (ConsumerRecord<K, V> record : records) {
+					preReceive(consumer, record.key(), record.value());
+
+					consumer.getListener().dataReceived(record.key(), record.value());
+
+					postReceive(consumer, record.key(), record.value());
+				}
+
+				postReceiveLoop(consumer);
+			}
+		}
+		
+		public void close() {
+	        // Set the atomic boolean because we want while loop to stop
+	        isClosed.set(true);
+	        // Wake up the consumer if it is in a poll waiting for data
+	        consumer.kafkaConsumer.wakeup();
+	        // Shutdown the thread pool to stop accepting new tasks
+	        threadPool.shutdown();
+
+	        try {
+	            // Wait for the consumer thread to finish
+	            threadPool.awaitTermination(5000, TimeUnit.MILLISECONDS);
+	        } catch (InterruptedException e) {
+	            logger.error("Error while awaiting termination", e);
+	        }
+
+	        consumer.close();
+	    }
 	}
 }

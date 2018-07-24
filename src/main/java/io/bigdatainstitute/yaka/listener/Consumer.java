@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public abstract class Consumer<K, V> implements AutoCloseable {
-	public ArrayList<DataListener<K, V>> listeners = new ArrayList<>();
+	DataListener<K, V> listener;
 
 	public ArrayList<ListenerDecorator<K, V>> preReceiveLoopListeners = new ArrayList<>();
 	public ArrayList<ListenerDecorator<K, V>> preReceiveListeners = new ArrayList<>();
@@ -35,7 +35,15 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 	public abstract void init();
 
 	public void addListener(DataListener<K, V> listener) {
-		listeners.add(listener);
+		if (this.listener != null) {
+			throw new RuntimeException("Only one listener can be added and should only be called once.");
+		} else {
+			this.listener = listener;
+		}
+	}
+	
+	public DataListener<K, V> getListener() {
+		return listener;
 	}
 
 	public abstract void close();
