@@ -5,12 +5,12 @@ import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import io.bigdatainstitute.yaka.listener.ListenerDecorator;
+import io.bigdatainstitute.yaka.listener.ListenerDecoratorImpl;
 
-public class ListenerAutoType<K, V> extends ListenerDecorator<K, V> {
+public class ListenerAutoType<K, V> extends ListenerDecoratorImpl<K, V> {
 
 	@Override
-	public void init(Properties consumerProperties, Class<K> keyClass, Class<V> valueClass) {
+	public void initListener(Properties consumerProperties, Class<K> keyClass, Class<V> valueClass) {
 		setDeserializerForType(consumerProperties, keyClass, ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG);
 		setDeserializerForType(consumerProperties, valueClass, ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG);
 	}
@@ -30,7 +30,7 @@ public class ListenerAutoType<K, V> extends ListenerDecorator<K, V> {
 	}
 
 	@Override
-	public void close() {
+	public void closeListener() {
 
 	}
 

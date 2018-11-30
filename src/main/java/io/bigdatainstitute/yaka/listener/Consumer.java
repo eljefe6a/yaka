@@ -50,7 +50,7 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 
 	public void registerDecorators(Properties consumerProperties) {
 		for (ListenerDecorator<K, V> decorator : decorators) {
-			decorator.init(consumerProperties, keyClass, valueClass);
+			decorator.initListener(consumerProperties, keyClass, valueClass);
 		}
 
 		for (ListenerDecorator<K, V> decorator : decorators) {

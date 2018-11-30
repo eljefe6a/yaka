@@ -38,7 +38,7 @@ public abstract class Producer<K, V> implements AutoCloseable {
 
 	public void registerDecorators(Properties producerProperties) {
 		for (ProducerDecorator<K, V> decorator : decorators) {
-			decorator.init(producerProperties, keyClass, valueClass);
+			decorator.initProducer(producerProperties, keyClass, valueClass);
 		}
 
 		for (ProducerDecorator<K, V> decorator : decorators) {
