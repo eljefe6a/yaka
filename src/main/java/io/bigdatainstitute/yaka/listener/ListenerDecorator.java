@@ -3,6 +3,8 @@ package io.bigdatainstitute.yaka.listener;
 import java.util.Properties;
 
 public interface ListenerDecorator<K, V> {
+	public boolean offerPreRun();
+	
 	public boolean offerPreReceiveLoop();
 	
 	public boolean offerPreReceive();
@@ -10,6 +12,8 @@ public interface ListenerDecorator<K, V> {
 	public boolean offerPostReceive();
 	
 	public boolean offerPostReceiveLoop();
+	
+	public void preRun(Consumer<K, V> consumer);
 	
 	public void preReceiveLoop(Consumer<K, V> consumer);
 	

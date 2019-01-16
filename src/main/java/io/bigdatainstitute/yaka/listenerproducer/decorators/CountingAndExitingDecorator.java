@@ -1,4 +1,4 @@
-package io.bigdatainstitute.yaka.listener.decorators;
+package io.bigdatainstitute.yaka.listenerproducer.decorators;
 
 import java.util.Properties;
 import java.util.Timer;

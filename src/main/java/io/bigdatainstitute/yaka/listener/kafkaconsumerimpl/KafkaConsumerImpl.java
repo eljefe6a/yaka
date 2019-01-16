@@ -84,6 +84,8 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 
 		@Override
 		public void run() {
+			preRun(consumer);
+			
 			while (isClosed.get() == false) {
 				preReceiveLoop(consumer);
 

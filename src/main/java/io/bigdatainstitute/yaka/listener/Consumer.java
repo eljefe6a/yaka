@@ -6,6 +6,7 @@ import java.util.Properties;
 public abstract class Consumer<K, V> implements AutoCloseable {
 	DataListener<K, V> listener;
 
+	public ArrayList<ListenerDecorator<K, V>> preRunListeners = new ArrayList<>();
 	public ArrayList<ListenerDecorator<K, V>> preReceiveLoopListeners = new ArrayList<>();
 	public ArrayList<ListenerDecorator<K, V>> preReceiveListeners = new ArrayList<>();
 	public ArrayList<ListenerDecorator<K, V>> postReceiveListeners = new ArrayList<>();
@@ -52,6 +53,12 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 		for (ListenerDecorator<K, V> decorator : decorators) {
 			decorator.initListener(consumerProperties, keyClass, valueClass);
 		}
+		
+		for (ListenerDecorator<K, V> decorator : decorators) {
+			if (decorator.offerPreRun()) {
+				preRunListeners.add(decorator);
+			}
+		}
 
 		for (ListenerDecorator<K, V> decorator : decorators) {
 			if (decorator.offerPreReceiveLoop()) {
@@ -75,6 +82,12 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 			if (decorator.offerPostReceiveLoop()) {
 				postReceiveLoopListeners.add(decorator);
 			}
+		}
+	}
+	
+	public void preRun(Consumer<K, V> consumer) {
+		for (ListenerDecorator<K, V> decorator : preRunListeners) {
+			decorator.preRun(consumer);
 		}
 	}
 
