@@ -5,6 +5,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,12 +26,17 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 	Properties props = new Properties();
 
 	KafkaConsumer<K, V> kafkaConsumer;
-	
-	/** Thread pool to run consumer in */
-    ExecutorService threadPool;
 
-    ConsumerThread consumerThread;
-    
+	/** Thread pool to run consumer in */
+	ExecutorService threadPool;
+
+	ConsumerThread consumerThread;
+
+	/** The number of threads in the thread pool */
+	private static final int NUM_THREADS = 1;
+
+	CountDownLatch threadPoolLatch;
+
 	@SafeVarargs
 	public KafkaConsumerImpl(String brokers, String topic, String consumerGroupName, Class<K> keyClass,
 			Class<V> valueClass, ListenerDecorator<K, V>... decorators) {
@@ -46,7 +52,9 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 
 		registerDecorators(props);
 
-		threadPool = Executors.newFixedThreadPool(1);
+		threadPool = Executors.newFixedThreadPool(NUM_THREADS);
+
+		threadPoolLatch = new CountDownLatch(NUM_THREADS);
 	}
 
 	@Override
@@ -71,13 +79,13 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 	public KafkaConsumer<K, V> getKafkaConsumer() {
 		return kafkaConsumer;
 	}
-	
+
 	public class ConsumerThread implements Runnable {
-	    /** Atomic boolean to keep track of wanting to close connection */
-	    private AtomicBoolean isClosed = new AtomicBoolean(false);
-	    
+		/** Atomic boolean to keep track of wanting to close connection */
+		private AtomicBoolean isClosed = new AtomicBoolean(false);
+
 		KafkaConsumerImpl<K, V> consumer;
-		
+
 		public ConsumerThread(KafkaConsumerImpl<K, V> consumer) {
 			this.consumer = consumer;
 		}
@@ -85,7 +93,7 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 		@Override
 		public void run() {
 			preRun(consumer);
-			
+
 			while (isClosed.get() == false) {
 				preReceiveLoop(consumer);
 
@@ -102,23 +110,34 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 				postReceiveLoop(consumer);
 			}
 		}
-		
+
 		public void close() {
-	        // Set the atomic boolean because we want while loop to stop
-	        isClosed.set(true);
-	        // Wake up the consumer if it is in a poll waiting for data
-	        consumer.kafkaConsumer.wakeup();
-	        // Shutdown the thread pool to stop accepting new tasks
-	        threadPool.shutdown();
+			// Set the atomic boolean because we want while loop to stop
+			isClosed.set(true);
+			// Wake up the consumer if it is in a poll waiting for data
+			consumer.kafkaConsumer.wakeup();
+			// Shutdown the thread pool to stop accepting new tasks
+			threadPool.shutdown();
 
-	        try {
-	            // Wait for the consumer thread to finish
-	            threadPool.awaitTermination(5000, TimeUnit.MILLISECONDS);
-	        } catch (InterruptedException e) {
-	            logger.error("Error while awaiting termination", e);
-	        }
+			try {
+				// Wait for the consumer thread to finish
+				threadPool.awaitTermination(5000, TimeUnit.MILLISECONDS);
+			} catch (InterruptedException e) {
+				logger.error("Error while awaiting termination", e);
+			}
 
-	        consumer.close();
-	    }
+			consumer.kafkaConsumer.close();
+
+			threadPoolLatch.countDown();
+		}
+	}
+
+	@Override
+	public void blockUntilClosed() {
+		try {
+			threadPoolLatch.await();
+		} catch (InterruptedException e) {
+			logger.error("Error while waiting on thread pool.", e);
+		}
 	}
 }

@@ -17,18 +17,19 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 	public String consumerGroupName;
 
 	ListenerDecorator<K, V>[] decorators;
-	
+
 	Class<K> keyClass;
 	Class<V> valueClass;
 
 	@SafeVarargs
-	public Consumer(String brokers, String topic, String consumerGroupName, Class<K> keyClass, Class<V> valueClass, ListenerDecorator<K, V>... decorators) {
+	public Consumer(String brokers, String topic, String consumerGroupName, Class<K> keyClass, Class<V> valueClass,
+			ListenerDecorator<K, V>... decorators) {
 		this.brokers = brokers;
 		this.topic = topic;
 		this.consumerGroupName = consumerGroupName;
 
 		this.decorators = decorators;
-		
+
 		this.keyClass = keyClass;
 		this.valueClass = valueClass;
 	}
@@ -42,18 +43,32 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 			this.listener = listener;
 		}
 	}
-	
+
 	public DataListener<K, V> getListener() {
 		return listener;
 	}
 
+	/**
+	 * Closes the consumer and performs any other cleanup
+	 */
 	public abstract void close();
 
+	/**
+	 * Blocks the calling thread until the consumer thread closes
+	 */
+	public abstract void blockUntilClosed();
+
+	/**
+	 * Goes through all decorators and offers them the event to accept or not
+	 * 
+	 * @param consumerProperties
+	 *            The consumer's properties object to add new settings
+	 */
 	public void registerDecorators(Properties consumerProperties) {
 		for (ListenerDecorator<K, V> decorator : decorators) {
 			decorator.initListener(consumerProperties, keyClass, valueClass);
 		}
-		
+
 		for (ListenerDecorator<K, V> decorator : decorators) {
 			if (decorator.offerPreRun()) {
 				preRunListeners.add(decorator);
@@ -84,7 +99,7 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 			}
 		}
 	}
-	
+
 	public void preRun(Consumer<K, V> consumer) {
 		for (ListenerDecorator<K, V> decorator : preRunListeners) {
 			decorator.preRun(consumer);
