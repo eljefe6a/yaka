@@ -14,12 +14,15 @@ public class ListenerOnly {
 
 		try (Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, topic, consumerGroup, String.class,
 				String.class, new ListenerAutoType<>(), new ExactlyOnce<>());) {
+			consumer.init();
 			consumer.addListener(new DataListener<String, String>() {
 				@Override
 				public void dataReceived(String key, String value) {
 					// Do something
 				}
 			});
+			
+			consumer.blockUntilClosed();
 		}
 	}
 }

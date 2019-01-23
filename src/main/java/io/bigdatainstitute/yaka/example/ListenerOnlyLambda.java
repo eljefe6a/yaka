@@ -13,7 +13,9 @@ public class ListenerOnlyLambda {
 
 		try (Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, topic, consumerGroup, String.class,
 				String.class, new ListenerAutoType<>(), new ExactlyOnce<>());) {
+			consumer.init();
 			consumer.addListener((String key, String value) -> key.length() /* Do something with key/value */);
+			consumer.blockUntilClosed();
 		}
 	}
 }

@@ -16,6 +16,7 @@ public class ProducerOnly {
 
 		try (Producer<String, String> producer = new KafkaProducerImpl<>(brokers, topic, String.class, String.class,
 				new ProducerAutoType<>(), new HighDurable<>());) {
+			producer.init();
 			producer.produce("key", "value");
 		} catch (Exception e) {
 			logger.error("Error producing", e);

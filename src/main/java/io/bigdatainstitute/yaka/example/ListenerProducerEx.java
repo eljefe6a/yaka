@@ -24,8 +24,10 @@ public class ListenerProducerEx<K, V> {
 
 		Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, inputTopic, consumerGroup, String.class,
 				String.class, new ListenerAutoType<>(), new ExactlyOnce<>());
+		consumer.init();
 		Producer<String, String> producer = new KafkaProducerImpl<String, String>(brokers, outputTopic, String.class,
 				String.class, new ProducerAutoType<>(), new HighDurable<String, String>());
+		producer.init();
 
 		try (ListenerProducer<String, String, String, String> listenerProducer = new ListenerProducer<>(consumer,
 				producer)) {
@@ -37,6 +39,8 @@ public class ListenerProducerEx<K, V> {
 
 				}
 			});
+			
+			consumer.blockUntilClosed();
 		} catch (Exception e) {
 			logger.error("Error consuming and producing", e);
 		}

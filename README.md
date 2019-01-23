@@ -19,34 +19,40 @@ Instead of direct consumption, YAKA uses listeners. These listeners are notified
 listener doesn't have to create its own thread.
 
 ```java
-// Simple consumption. This includes automatically figuring out types and making the consumption exactly once
-try (Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, topic, consumerGroup, String.class,
-		String.class, new ListenerAutoType<>(), new ExactlyOnce<>());) {
-	consumer.addListener(new DataListener<String, String>() {
-		@Override
-		public void dataReceived(String key, String value) {
-			// Do something
+        // Simple consumption. This includes automatically figuring out types and making the consumption exactly once
+		try (Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, topic, consumerGroup, String.class,
+				String.class, new ListenerAutoType<>(), new ExactlyOnce<>());) {
+			consumer.init();
+			consumer.addListener(new DataListener<String, String>() {
+				@Override
+				public void dataReceived(String key, String value) {
+					// Do something
+				}
+			});
+			
+			consumer.blockUntilClosed();
 		}
-	});
-}
-
-// The same thing, but using lambdas
-try (Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, topic, consumerGroup, String.class,
-		String.class, new ListenerAutoType<>(), new ExactlyOnce<>());) {
-	consumer.addListener((String key, String value) -> key.length() /* Do something with key/value */);
-}
+		
+        // The same thing, but using lambdas
+		try (Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, topic, consumerGroup, String.class,
+				String.class, new ListenerAutoType<>(), new ExactlyOnce<>());) {
+			consumer.init();
+			consumer.addListener((String key, String value) -> key.length() /* Do something with key/value */);
+			consumer.blockUntilClosed();
+		}
 ```
 
 ### Producers
 
 ```java
-// Create a producer. Automatically figures out the types and makes the configuration changes to be highly durable.
-try (Producer<String, String> producer = new KafkaProducerImpl<>(brokers, topic, String.class, String.class,
-		new ProducerAutoType<>(), new HighDurable<>());) {
-	producer.produce("key", "value");
-} catch (Exception e) {
-	logger.error("Error producing", e);
-}
+        // Create a producer. Automatically figures out the types and makes the configuration changes to be highly durable.
+		try (Producer<String, String> producer = new KafkaProducerImpl<>(brokers, topic, String.class, String.class,
+				new ProducerAutoType<>(), new HighDurable<>());) {
+			producer.init();
+			producer.produce("key", "value");
+		} catch (Exception e) {
+			logger.error("Error producing", e);
+		}
 ```
 
 ### Listeners and Producers
@@ -55,39 +61,47 @@ A very common pattern is to listen on a topic, do something, and then produce a 
 and more straightforward.
 
 ```java
-// Create a listener and a producer. Then listen and produce data.
-Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, inputTopic, consumerGroup, String.class,
-		String.class, new ListenerAutoType<>(), new ExactlyOnce<>());
-Producer<String, String> producer = new KafkaProducerImpl<String, String>(brokers, outputTopic, String.class,
-		String.class, new ProducerAutoType<>(), new HighDurable<String, String>());
+        // Create a listener and a producer. Then listen and produce data.
+		Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, inputTopic, consumerGroup, String.class,
+				String.class, new ListenerAutoType<>(), new ExactlyOnce<>());
+		consumer.init();
+		Producer<String, String> producer = new KafkaProducerImpl<String, String>(brokers, outputTopic, String.class,
+				String.class, new ProducerAutoType<>(), new HighDurable<String, String>());
+		producer.init();
 
-try (ListenerProducer<String, String, String, String> listenerProducer = new ListenerProducer<>(consumer,
-		producer)) {
-	consumer.addListener(new DataListener<String, String>() {
+		try (ListenerProducer<String, String, String, String> listenerProducer = new ListenerProducer<>(consumer,
+				producer)) {
+			consumer.addListener(new DataListener<String, String>() {
 
-		@Override
-		public void dataReceived(String key, String value) {
-			producer.produce(key, value);
+				@Override
+				public void dataReceived(String key, String value) {
+					producer.produce(key, value);
 
+				}
+			});
+			
+			consumer.blockUntilClosed();
+		} catch (Exception e) {
+			logger.error("Error consuming and producing", e);
 		}
-	});
-} catch (Exception e) {
-	logger.error("Error consuming and producing", e);
-}
 
-// The same thing with lambdas		
-Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, inputTopic, consumerGroup, String.class,
-		String.class, new ListenerAutoType<>(), new ExactlyOnce<>());
-Producer<String, String> producer = new KafkaProducerImpl<String, String>(brokers, outputTopic, String.class,
-		String.class, new ProducerAutoType<>(), new HighDurable<String, String>());
+        // The same thing with lambdas		
+		Consumer<String, String> consumer = new KafkaConsumerImpl<>(brokers, inputTopic, consumerGroup, String.class,
+				String.class, new ListenerAutoType<>(), new ExactlyOnce<>());
+		consumer.init();
+		Producer<String, String> producer = new KafkaProducerImpl<String, String>(brokers, outputTopic, String.class,
+				String.class, new ProducerAutoType<>(), new HighDurable<String, String>());
+		producer.init();
 
-try (ListenerProducer<String, String, String, String> listenerProducer = new ListenerProducer<>(consumer,
-		producer)) {
-	listenerProducer.addListener((String key, String value,
-			ListenerProducerContext<String, String> context) -> context.send(key, value));
-} catch (Exception e) {
-	logger.error("Error consuming and producing", e);
-}
+		try (ListenerProducer<String, String, String, String> listenerProducer = new ListenerProducer<>(consumer,
+				producer)) {
+			listenerProducer.addListener((String key, String value,
+					ListenerProducerContext<String, String> context) -> context.send(key, value));
+			
+			consumer.blockUntilClosed();
+		} catch (Exception e) {
+			logger.error("Error consuming and producing", e);
+		}
 ```
 
 ## Decorators
