@@ -19,7 +19,7 @@ public class ListenerAutoType<K, V> extends ListenerDecoratorImpl<K, V> {
 		String deserializer = null;
 
 		if (type.equals(String.class)) {
-			deserializer = StringDeserializer.class.toString();
+			deserializer = StringDeserializer.class.getName();
 		} else {
 			throw new RuntimeException("Type not found in list. Type was " + type.toString());
 		}

@@ -49,6 +49,11 @@ public class KafkaConsumerImpl<K, V> extends Consumer<K, V> {
 		props.put(BOOTSTRAP_SERVERS_CONFIG, brokers);
 		// Configure consumer group
 		props.put(GROUP_ID_CONFIG, consumerGroupName);
+		
+		// Initialize all decorators
+		for (ListenerDecorator<K, V> listenerDecorator : decorators) {
+			listenerDecorator.initListener(props, keyClass, valueClass);
+		}
 
 		registerDecorators(props);
 

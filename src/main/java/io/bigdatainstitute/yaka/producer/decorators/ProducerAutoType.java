@@ -18,7 +18,7 @@ public class ProducerAutoType<K, V> extends ProducerDecoratorImpl<K, V> {
 		String deserializer = null;
 
 		if (type.equals(String.class)) {
-			deserializer = StringSerializer.class.toString();
+			deserializer = StringSerializer.class.getName();
 		} else {
 			throw new RuntimeException("Type not found in list. Type was " + type.toString());
 		}

@@ -15,10 +15,10 @@ public abstract class Producer<K, V> implements AutoCloseable {
 	public String brokers;
 	public String topic;
 
-	ProducerDecorator<K, V>[] decorators;
+	public ProducerDecorator<K, V>[] decorators;
 
-	Class<K> keyClass;
-	Class<V> valueClass;
+	public Class<K> keyClass;
+	public Class<V> valueClass;
 
 	@SafeVarargs
 	public Producer(String brokers, String topic, Class<K> keyClass, Class<V> valueClass,

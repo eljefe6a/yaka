@@ -16,10 +16,10 @@ public abstract class Consumer<K, V> implements AutoCloseable {
 	public String topic;
 	public String consumerGroupName;
 
-	ListenerDecorator<K, V>[] decorators;
+	public ListenerDecorator<K, V>[] decorators;
 
-	Class<K> keyClass;
-	Class<V> valueClass;
+	public Class<K> keyClass;
+	public Class<V> valueClass;
 
 	@SafeVarargs
 	public Consumer(String brokers, String topic, String consumerGroupName, Class<K> keyClass, Class<V> valueClass,

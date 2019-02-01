@@ -30,8 +30,12 @@ public class KafkaStartingOffsets<K, V> extends ListenerDecoratorImpl<K, V> {
 	String offsetValue;
 	
 	public KafkaStartingOffsets(String offsetValue) {
-		// Normalize value to lowercase
-		this.offsetValue = offsetValue.toLowerCase();
+		if (offsetValue == null) {
+			this.offsetValue = LASTCOMMITTED;
+		} else {
+			// Normalize value to lowercase
+			this.offsetValue = offsetValue.toLowerCase();
+		}
 	}
 	
 	@Override

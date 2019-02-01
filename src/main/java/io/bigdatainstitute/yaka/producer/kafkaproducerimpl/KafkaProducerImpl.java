@@ -49,6 +49,11 @@ public class KafkaProducerImpl<K, V> extends Producer<K, V> {
 		Properties propsProd = new Properties();
 		propsProd.put(BOOTSTRAP_SERVERS_CONFIG, brokers);
 
+		// Initialize all decorators
+		for (ProducerDecorator<K, V> producerDecorator : decorators) {
+			producerDecorator.initProducer(propsProd, keyClass, valueClass);
+		}
+
 		registerDecorators(propsProd);
 
 		producer = new KafkaProducer<>(propsProd);
